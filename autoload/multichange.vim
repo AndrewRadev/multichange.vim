@@ -38,7 +38,21 @@ function! multichange#Stop()
 endfunction
 
 function! s:ChangedWord()
-  return @"
+  if col('.') == col('$')
+    let at_last_column = 1
+  else
+    let at_last_column = 0
+  endif
+
+  undo
+  let word = expand('<cword>')
+  redo
+
+  if at_last_column
+    call feedkeys("\<right>", 'n')
+  endif
+
+  return word
 endfunction
 
 function! s:PerformSubstitution(start, end, pattern)
