@@ -1,23 +1,9 @@
-vim-markmultiple
-================
+*Note: more documentation soon to come*
 
-An emacs-like mark multiple plugin, inspired from this plugin:
-
-[mark-multiple.el](https://github.com/magnars/mark-multiple.el)
+This plugin is originally a fork of https://github.com/adinapoli/vim-markmultiple, but it uses a different interface to accomplish a similar objective. Please check that one out as well.
 
 ## Usage
-**Ctrl-n** to activate and to go to the next match.
-When you are tired, simply change the word under the cursor the usual way.
 
-[Watch the screencast!](http://www.youtube.com/watch?v=deGhhILp2PY&feature=youtu.be)
+Press `<c-n>` to activate "Multi" mode. Edit any word in the buffer with a `c` motion (e.g. `cw`, `ciw`, `ct_`, `C`). After exiting insert mode, the word change will propagate throughout the buffer.
 
-## Why highlighted words remain on screen?
-Because you "Interrupted" the marking process without actually substituting
-nothing. If this happens, simply call ```MarkMultipleClean()```
-
-
-## Installation
-Like any Pathogen bundle.
-
-## Contributes
-Yes, please. Pull requests welcome.
+Alternatively, mark several lines in visual mode and then enter "Multi" mode by pressing `<c-n>`. The result will be the same, except the change will be limited to words within the marked lines.
