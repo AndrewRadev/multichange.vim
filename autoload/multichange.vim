@@ -7,6 +7,8 @@ function! multichange#Setup(visual)
     let b:multichange_end   = line('$')
   endif
 
+  call s:MapEsc()
+
   echohl ModeMsg | echo "-- MULTI --" | echohl None
 endfunction
 
@@ -33,6 +35,10 @@ function! multichange#Start()
 endfunction
 
 function! multichange#Stop()
+  if exists('b:multichange_start')
+    call s:UnmapEsc()
+  endif
+
   if exists('b:multichange_start') && exists('b:multichange_pattern')
     call s:PerformSubstitution(b:multichange_start, b:multichange_end, b:multichange_pattern)
     unlet b:multichange_start
@@ -75,4 +81,20 @@ function! s:PerformSubstitution(start, end, pattern)
   finally
     call winrestview(saved_view)
   endtry
+endfunction
+
+function! s:MapEsc()
+  if maparg('<esc>', 'n') != ''
+    let b:multichange_saved_esc_mapping = maparg('<esc>', 'n')
+  endif
+  nnoremap <esc> :call multichange#Stop()<cr>:echo<cr>
+endfunction
+
+function! s:UnmapEsc()
+  nunmap <esc>
+
+  if exists('b:multichange_saved_esc_mapping')
+    exe 'nnoremap <esc> '.b:multichange_saved_esc_mapping
+    unlet b:multichange_saved_esc_mapping
+  endif
 endfunction
