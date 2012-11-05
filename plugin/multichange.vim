@@ -6,8 +6,14 @@ let g:loaded_multichange = '0.0.1'
 let s:keepcpo = &cpo
 set cpo&vim
 
-nnoremap <c-n> :     call multichange#Setup(0, line('$'))<cr>
-xnoremap <c-n> :<c-u>call multichange#Setup(line("'<"), line("'>"))<cr>
+if !exists('g:multichange_mapping')
+  let g:multichange_mapping = '<c-n>'
+endif
+
+if g:multichange_mapping != ''
+  exe 'nnoremap '.g:multichange_mapping.' :     call multichange#Setup(0,           line(''$''))<cr>'
+  exe 'xnoremap '.g:multichange_mapping.' :<c-u>call multichange#Setup(line("''<"), line("''>"))<cr>'
+endif
 
 au InsertEnter * call multichange#Start()
 au InsertLeave * call multichange#Stop()
