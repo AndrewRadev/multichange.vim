@@ -11,8 +11,8 @@ if !exists('g:multichange_mapping')
 endif
 
 if g:multichange_mapping != ''
-  exe 'nnoremap '.g:multichange_mapping.' :     call multichange#Setup(0,           line(''$''))<cr>'
-  exe 'xnoremap '.g:multichange_mapping.' :<c-u>call multichange#Setup(line("''<"), line("''>"))<cr>'
+  exe 'nnoremap '.g:multichange_mapping.' :     call multichange#Setup(0)<cr>'
+  exe 'xnoremap '.g:multichange_mapping.' :<c-u>call multichange#Setup(1)<cr>'
 endif
 
 au InsertEnter * call multichange#Start()

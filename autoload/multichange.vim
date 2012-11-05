@@ -1,6 +1,11 @@
-function! multichange#Setup(start, end)
-  let b:multichange_start = a:start
-  let b:multichange_end   = a:end
+function! multichange#Setup(visual)
+  if a:visual
+    let b:multichange_start = line("'<")
+    let b:multichange_end   = line("'>")
+  else
+    let b:multichange_start = 0
+    let b:multichange_end   = line('$')
+  endif
 
   echohl ModeMsg | echo "-- MULTI --" | echohl None
 endfunction
