@@ -7,21 +7,34 @@ function! multichange#Setup(visual)
     let b:multichange_end   = line('$')
   endif
 
-  call s:MapEsc()
+  call s:ActivateCustomMappings()
 
   echohl ModeMsg | echo "-- MULTI --" | echohl None
 endfunction
 
-function! multichange#Start()
+function! multichange#Start(visual)
   if !exists('b:multichange_start')
     return
   endif
 
-  let changed_word = s:ChangedWord()
+  let typeahead = s:GetTypeahead()
 
-  if changed_word != ''
-    let b:multichange_pattern = '\<'.changed_word.'\>'
+  if a:visual
+    let changed_text = s:GetVisual()
+    if changed_text != ''
+      let b:multichange_pattern = changed_text
+    endif
+    call feedkeys('gvc', 'n')
+  else
+    let changed_text = expand('<cword>')
+    if changed_text != ''
+      let b:multichange_pattern = '\<'.changed_text.'\>'
+    endif
+    call feedkeys('c', 'n')
+    call feedkeys(typeahead)
+  endif
 
+  if changed_text != ''
     let match_pattern = b:multichange_pattern
     if b:multichange_start > 0
       let match_pattern = '\%>'.(b:multichange_start - 1).'l'.match_pattern
@@ -32,11 +45,13 @@ function! multichange#Start()
 
     call matchadd('Search', match_pattern)
   endif
+
+  echo
 endfunction
 
 function! multichange#Stop()
   if exists('b:multichange_start')
-    call s:UnmapEsc()
+    call s:DeactivateCustomMappings()
   endif
 
   if exists('b:multichange_start') && exists('b:multichange_pattern')
@@ -46,24 +61,8 @@ function! multichange#Stop()
     unlet b:multichange_pattern
     call clearmatches()
   endif
-endfunction
 
-function! s:ChangedWord()
-  if col('.') == col('$')
-    let at_last_column = 1
-  else
-    let at_last_column = 0
-  endif
-
-  undo
-  let word = expand('<cword>')
-  redo
-
-  if at_last_column
-    call feedkeys("\<right>", 'n')
-  endif
-
-  return word
+  echo
 endfunction
 
 function! s:PerformSubstitution(start, end, pattern)
@@ -83,18 +82,66 @@ function! s:PerformSubstitution(start, end, pattern)
   endtry
 endfunction
 
-function! s:MapEsc()
+function! s:ActivateCustomMappings()
   if maparg('<esc>', 'n') != ''
     let b:multichange_saved_esc_mapping = maparg('<esc>', 'n')
   endif
-  nnoremap <esc> :call multichange#Stop()<cr>:echo<cr>
+  if maparg('c', 'n') != ''
+    let b:multichange_saved_cn_mapping = maparg('c', 'n')
+  endif
+  if maparg('c', 'x') != ''
+    let b:multichange_saved_cx_mapping = maparg('c', 'x')
+  endif
+
+  nnoremap <buffer> c     :call multichange#Start(0)<cr>
+  xnoremap <buffer> c     :call multichange#Start(1)<cr>
+  nnoremap <buffer> <esc> :call multichange#Stop()<cr>
 endfunction
 
-function! s:UnmapEsc()
-  nunmap <esc>
+function! s:DeactivateCustomMappings()
+  nunmap <buffer> c
+  xunmap <buffer> c
+  nunmap <buffer> <esc>
 
+  if exists('b:multichange_saved_cn_mapping')
+    exe 'nnoremap c '.b:multichange_saved_cn_mapping
+    unlet b:multichange_saved_cn_mapping
+  endif
+  if exists('b:multichange_saved_cx_mapping')
+    exe 'xnoremap c '.b:multichange_saved_cx_mapping
+    unlet b:multichange_saved_cx_mapping
+  endif
   if exists('b:multichange_saved_esc_mapping')
     exe 'nnoremap <esc> '.b:multichange_saved_esc_mapping
     unlet b:multichange_saved_esc_mapping
   endif
+endfunction
+
+function! s:GetVisual()
+  try
+    let saved_view = winsaveview()
+
+    let original_reg      = getreg('z')
+    let original_reg_type = getregtype('z')
+
+    exec 'normal! `<v`>"zy'
+    let text = @z
+    call setreg('z', original_reg, original_reg_type)
+
+    return text
+  finally
+    call winrestview(saved_view)
+  endtry
+endfunction
+
+function! s:GetTypeahead()
+  let typeahead = ''
+
+  let char = getchar(0)
+  while char != 0
+    let typeahead .= nr2char(char)
+    let char = getchar(0)
+  endwhile
+
+  return typeahead
 endfunction

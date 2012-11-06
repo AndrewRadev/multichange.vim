@@ -15,7 +15,6 @@ if g:multichange_mapping != ''
   exe 'xnoremap '.g:multichange_mapping.' :<c-u>call multichange#Setup(1)<cr>'
 endif
 
-au InsertEnter * call multichange#Start()
 au InsertLeave * call multichange#Stop()
 
 let &cpo = s:keepcpo
