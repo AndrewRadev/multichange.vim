@@ -13,6 +13,34 @@ function! multichange#ModeState(visual)
         \   'start':     start,
         \   'end':       end,
         \   'has_range': has_range,
+        \
+        \   'saved_cn_mapping':  '',
+        \   'saved_cx_mapping':  '',
+        \   'saved_esc_mapping': '',
+        \ }
+endfunction
+
+function! multichange#SubstitutionState(visual)
+  if a:visual
+    let changed_text = s:GetByMarks('`<', '`>')
+    if changed_text != ''
+      let pattern = changed_text
+    endif
+    call feedkeys('gv', 'n')
+  else
+    let changed_text = expand('<cword>')
+    if changed_text != ''
+      let pattern = '\<'.changed_text.'\>'
+    endif
+  endif
+
+  if changed_text == ''
+    return {}
+  endif
+
+  return {
+        \   'pattern':   pattern,
+        \   'is_visual': a:visual,
         \ }
 endfunction
 
@@ -29,26 +57,17 @@ function! multichange#Start(visual)
 
   let mode_state = b:multichange_mode_state
 
-  let b:multichange_visual = a:visual
   let typeahead = s:GetTypeahead()
+  let b:multichange_substitution_state = multichange#SubstitutionState(a:visual)
+  call feedkeys('c', 'n')
+  call feedkeys(typeahead)
 
-  if b:multichange_visual
-    let changed_text = s:GetByMarks('`<', '`>')
-    if changed_text != ''
-      let b:multichange_pattern = changed_text
-    endif
-    call feedkeys('gvc', 'n')
+  let substitution_state = b:multichange_substitution_state
+
+  if empty(substitution_state)
+    unlet b:multichange_substitution_state
   else
-    let changed_text = expand('<cword>')
-    if changed_text != ''
-      let b:multichange_pattern = '\<'.changed_text.'\>'
-    endif
-    call feedkeys('c', 'n')
-    call feedkeys(typeahead)
-  endif
-
-  if changed_text != ''
-    let match_pattern = b:multichange_pattern
+    let match_pattern = substitution_state.pattern
 
     if mode_state.has_range
       let match_pattern = '\%>'.(mode_state.start - 1).'l'.match_pattern
@@ -60,10 +79,9 @@ function! multichange#Start(visual)
 endfunction
 
 function! multichange#Substitute()
-  if exists('b:multichange_mode_state') && exists('b:multichange_pattern')
-    call s:PerformSubstitution(b:multichange_mode_state, b:multichange_pattern, b:multichange_visual)
-    unlet b:multichange_pattern
-    unlet b:multichange_visual
+  if exists('b:multichange_mode_state') && exists('b:multichange_substitution_state')
+    call s:PerformSubstitution(b:multichange_mode_state, b:multichange_substitution_state)
+    unlet b:multichange_substitution_state
     call clearmatches()
     call multichange#EchoModeMessage()
   endif
@@ -75,9 +93,8 @@ function! multichange#Stop()
     unlet b:multichange_mode_state
   endif
 
-  if exists('b:multichange_pattern')
-    unlet b:multichange_pattern
-    unlet b:multichange_visual
+  if exists('b:multichange_substitution_state')
+    unlet b:multichange_substitution_state
     call clearmatches()
   endif
 
@@ -90,7 +107,7 @@ function! multichange#EchoModeMessage()
   endif
 endfunction
 
-function! s:PerformSubstitution(mode_state, pattern, visual)
+function! s:PerformSubstitution(mode_state, substitution_state)
   try
     let saved_view = winsaveview()
 
@@ -102,10 +119,10 @@ function! s:PerformSubstitution(mode_state, pattern, visual)
     endif
 
     " prepare the pattern
-    let pattern = escape(a:pattern, '/')
+    let pattern = escape(a:substitution_state.pattern, '/')
 
     " figure out the replacement
-    if a:visual
+    if a:substitution_state.is_visual
       let replacement = s:GetByMarks('`<', '`.')
     else
       let replacement = expand('<cword>')
@@ -123,15 +140,11 @@ function! s:PerformSubstitution(mode_state, pattern, visual)
 endfunction
 
 function! s:ActivateCustomMappings()
-  if maparg('<esc>', 'n') != ''
-    let b:multichange_saved_esc_mapping = maparg('<esc>', 'n')
-  endif
-  if maparg('c', 'n') != ''
-    let b:multichange_saved_cn_mapping = maparg('c', 'n')
-  endif
-  if maparg('c', 'x') != ''
-    let b:multichange_saved_cx_mapping = maparg('c', 'x')
-  endif
+  let mode_state = b:multichange_mode_state
+
+  let mode_state.saved_esc_mapping = maparg('<esc>', 'n')
+  let mode_state.saved_cn_mapping  = maparg('c', 'n')
+  let mode_state.saved_cx_mapping  = maparg('c', 'x')
 
   nnoremap <buffer> c :silent call multichange#Start(0)<cr>
   xnoremap <buffer> c :<c-u>silent call multichange#Start(1)<cr>
@@ -143,17 +156,16 @@ function! s:DeactivateCustomMappings()
   xunmap <buffer> c
   nunmap <buffer> <esc>
 
-  if exists('b:multichange_saved_cn_mapping')
-    exe 'nnoremap c '.b:multichange_saved_cn_mapping
-    unlet b:multichange_saved_cn_mapping
+  let mode_state = b:multichange_mode_state
+
+  if mode_state.saved_cn_mapping != ''
+    exe 'nnoremap c '.mode_state.saved_cn_mapping
   endif
-  if exists('b:multichange_saved_cx_mapping')
-    exe 'xnoremap c '.b:multichange_saved_cx_mapping
-    unlet b:multichange_saved_cx_mapping
+  if mode_state.saved_cx_mapping != ''
+    exe 'xnoremap c '.mode_state.saved_cx_mapping
   endif
-  if exists('b:multichange_saved_esc_mapping')
-    exe 'nnoremap <esc> '.b:multichange_saved_esc_mapping
-    unlet b:multichange_saved_esc_mapping
+  if mode_state.saved_esc_mapping != ''
+    exe 'nnoremap <esc> '.mode_state.saved_esc_mapping
   endif
 endfunction
 
