@@ -1,3 +1,7 @@
+" TODO (2012-11-08)
+"   - structure for the mode
+"   - structure for a single substitution
+
 function! multichange#Setup(visual)
   if a:visual
     let b:multichange_start = line("'<")
@@ -16,10 +20,11 @@ function! multichange#Start(visual)
     return
   endif
 
+  let b:multichange_visual = a:visual
   let typeahead = s:GetTypeahead()
 
-  if a:visual
-    let changed_text = s:GetVisual()
+  if b:multichange_visual
+    let changed_text = s:GetByMarks('`<', '`>')
     if changed_text != ''
       let b:multichange_pattern = changed_text
     endif
@@ -48,8 +53,9 @@ endfunction
 
 function! multichange#Substitute()
   if exists('b:multichange_start') && exists('b:multichange_pattern')
-    call s:PerformSubstitution(b:multichange_start, b:multichange_end, b:multichange_pattern)
+    call s:PerformSubstitution(b:multichange_start, b:multichange_end, b:multichange_pattern, b:multichange_visual)
     unlet b:multichange_pattern
+    unlet b:multichange_visual
     call clearmatches()
     call multichange#EchoModeMessage()
   endif
@@ -64,6 +70,7 @@ function! multichange#Stop()
 
   if exists('b:multichange_pattern')
     unlet b:multichange_pattern
+    unlet b:multichange_visual
     call clearmatches()
   endif
 
@@ -76,16 +83,23 @@ function! multichange#EchoModeMessage()
   endif
 endfunction
 
-function! s:PerformSubstitution(start, end, pattern)
+function! s:PerformSubstitution(start, end, pattern, visual)
   try
     let saved_view = winsaveview()
 
-    let pattern     = escape(a:pattern, '/')
-    let replacement = escape(expand('<cword>'), '/&')
+    let pattern = escape(a:pattern, '/')
+
+    if a:visual
+      let replacement = s:GetByMarks('`<', '`.')
+    else
+      let replacement = expand('<cword>')
+    endif
 
     if replacement == ''
       return
     endif
+
+    let replacement = escape(replacement, '/&')
 
     exe a:start.','.a:end.'s/'.pattern.'/'.replacement.'/ge'
   finally
@@ -128,14 +142,14 @@ function! s:DeactivateCustomMappings()
   endif
 endfunction
 
-function! s:GetVisual()
+function! s:GetByMarks(start, end)
   try
     let saved_view = winsaveview()
 
     let original_reg      = getreg('z')
     let original_reg_type = getregtype('z')
 
-    exec 'normal! `<v`>"zy'
+    exec 'normal! '.a:start.'v'.a:end.'"zy'
     let text = @z
     call setreg('z', original_reg, original_reg_type)
 
