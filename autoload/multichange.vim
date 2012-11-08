@@ -45,14 +45,14 @@ function! multichange#Substitute()
 endfunction
 
 function! multichange#Stop()
-  if exists('b:multichange_mode')
-    call s:DeactivateCustomMappings()
-    unlet b:multichange_mode
-  endif
-
   if exists('b:multichange_substitution')
     unlet b:multichange_substitution
     call clearmatches()
+  endif
+
+  if exists('b:multichange_mode')
+    call s:DeactivateCustomMappings()
+    unlet b:multichange_mode
   endif
 
   echo
