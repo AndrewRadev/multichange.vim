@@ -1,24 +1,33 @@
-" TODO (2012-11-08)
-"   - structure for the mode
-"   - structure for a single substitution
-
-function! multichange#Setup(visual)
+function! multichange#ModeState(visual)
   if a:visual
-    let b:multichange_start = line("'<")
-    let b:multichange_end   = line("'>")
+    let start     = line("'<")
+    let end       = line("'>")
+    let has_range = 1
   else
-    let b:multichange_start = 0
-    let b:multichange_end   = line('$')
+    let start     = -1
+    let end       = -1
+    let has_range = 0
   endif
 
+  return {
+        \   'start':     start,
+        \   'end':       end,
+        \   'has_range': has_range,
+        \ }
+endfunction
+
+function! multichange#Setup(visual)
+  let b:multichange_mode_state = multichange#ModeState(a:visual)
   call s:ActivateCustomMappings()
   call multichange#EchoModeMessage()
 endfunction
 
 function! multichange#Start(visual)
-  if !exists('b:multichange_start')
+  if !exists('b:multichange_mode_state')
     return
   endif
+
+  let mode_state = b:multichange_mode_state
 
   let b:multichange_visual = a:visual
   let typeahead = s:GetTypeahead()
@@ -40,11 +49,10 @@ function! multichange#Start(visual)
 
   if changed_text != ''
     let match_pattern = b:multichange_pattern
-    if b:multichange_start > 0
-      let match_pattern = '\%>'.(b:multichange_start - 1).'l'.match_pattern
-    endif
-    if b:multichange_end < line('$')
-      let match_pattern = match_pattern.'\%<'.(b:multichange_end + 1).'l'
+
+    if mode_state.has_range
+      let match_pattern = '\%>'.(mode_state.start - 1).'l'.match_pattern
+      let match_pattern = match_pattern.'\%<'.(mode_state.end + 1).'l'
     endif
 
     call matchadd('Search', match_pattern)
@@ -52,8 +60,8 @@ function! multichange#Start(visual)
 endfunction
 
 function! multichange#Substitute()
-  if exists('b:multichange_start') && exists('b:multichange_pattern')
-    call s:PerformSubstitution(b:multichange_start, b:multichange_end, b:multichange_pattern, b:multichange_visual)
+  if exists('b:multichange_mode_state') && exists('b:multichange_pattern')
+    call s:PerformSubstitution(b:multichange_mode_state, b:multichange_pattern, b:multichange_visual)
     unlet b:multichange_pattern
     unlet b:multichange_visual
     call clearmatches()
@@ -62,10 +70,9 @@ function! multichange#Substitute()
 endfunction
 
 function! multichange#Stop()
-  if exists('b:multichange_start')
+  if exists('b:multichange_mode_state')
     call s:DeactivateCustomMappings()
-    unlet b:multichange_start
-    unlet b:multichange_end
+    unlet b:multichange_mode_state
   endif
 
   if exists('b:multichange_pattern')
@@ -78,30 +85,38 @@ function! multichange#Stop()
 endfunction
 
 function! multichange#EchoModeMessage()
-  if exists('b:multichange_start')
+  if exists('b:multichange_mode_state')
     echohl ModeMsg | echo "-- MULTI --" | echohl None
   endif
 endfunction
 
-function! s:PerformSubstitution(start, end, pattern, visual)
+function! s:PerformSubstitution(mode_state, pattern, visual)
   try
     let saved_view = winsaveview()
 
+    " build up the range of the substitution
+    if a:mode_state.has_range
+      let range = a:mode_state.start.','.a:mode_state.end
+    else
+      let range = '%'
+    endif
+
+    " prepare the pattern
     let pattern = escape(a:pattern, '/')
 
+    " figure out the replacement
     if a:visual
       let replacement = s:GetByMarks('`<', '`.')
     else
       let replacement = expand('<cword>')
     endif
-
     if replacement == ''
       return
     endif
-
     let replacement = escape(replacement, '/&')
 
-    exe a:start.','.a:end.'s/'.pattern.'/'.replacement.'/ge'
+    " perform the substitution
+    exe range.'s/'.pattern.'/'.replacement.'/ge'
   finally
     call winrestview(saved_view)
   endtry
