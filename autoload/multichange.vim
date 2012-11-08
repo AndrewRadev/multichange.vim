@@ -8,8 +8,7 @@ function! multichange#Setup(visual)
   endif
 
   call s:ActivateCustomMappings()
-
-  echohl ModeMsg | echo "-- MULTI --" | echohl None
+  call multichange#EchoModeMessage()
 endfunction
 
 function! multichange#Start(visual)
@@ -45,24 +44,36 @@ function! multichange#Start(visual)
 
     call matchadd('Search', match_pattern)
   endif
+endfunction
 
-  echo
+function! multichange#Substitute()
+  if exists('b:multichange_start') && exists('b:multichange_pattern')
+    call s:PerformSubstitution(b:multichange_start, b:multichange_end, b:multichange_pattern)
+    unlet b:multichange_pattern
+    call clearmatches()
+    call multichange#EchoModeMessage()
+  endif
 endfunction
 
 function! multichange#Stop()
   if exists('b:multichange_start')
     call s:DeactivateCustomMappings()
-  endif
-
-  if exists('b:multichange_start') && exists('b:multichange_pattern')
-    call s:PerformSubstitution(b:multichange_start, b:multichange_end, b:multichange_pattern)
     unlet b:multichange_start
     unlet b:multichange_end
+  endif
+
+  if exists('b:multichange_pattern')
     unlet b:multichange_pattern
     call clearmatches()
   endif
 
   echo
+endfunction
+
+function! multichange#EchoModeMessage()
+  if exists('b:multichange_start')
+    echohl ModeMsg | echo "-- MULTI --" | echohl None
+  endif
 endfunction
 
 function! s:PerformSubstitution(start, end, pattern)
@@ -93,8 +104,8 @@ function! s:ActivateCustomMappings()
     let b:multichange_saved_cx_mapping = maparg('c', 'x')
   endif
 
-  nnoremap <buffer> c     :call multichange#Start(0)<cr>
-  xnoremap <buffer> c     :call multichange#Start(1)<cr>
+  nnoremap <buffer> c :silent call multichange#Start(0)<cr>
+  xnoremap <buffer> c :<c-u>silent call multichange#Start(1)<cr>
   nnoremap <buffer> <esc> :call multichange#Stop()<cr>
 endfunction
 

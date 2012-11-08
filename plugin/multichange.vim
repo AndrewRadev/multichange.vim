@@ -15,7 +15,9 @@ if g:multichange_mapping != ''
   exe 'xnoremap '.g:multichange_mapping.' :<c-u>call multichange#Setup(1)<cr>'
 endif
 
-au InsertLeave * call multichange#Stop()
+au InsertLeave * call multichange#Substitute()
+au InsertLeave * call multichange#EchoModeMessage()
+au CursorHold  * call multichange#EchoModeMessage()
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
