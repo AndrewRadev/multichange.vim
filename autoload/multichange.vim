@@ -55,6 +55,9 @@ function! multichange#Stop()
     unlet b:multichange_mode
   endif
 
+  sign unplace 1
+  sign unplace 2
+
   echo
 endfunction
 

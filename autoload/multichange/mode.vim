@@ -9,6 +9,12 @@ function! multichange#mode#New(visual)
     let has_range = 0
   endif
 
+  if has_range
+    sign define multichange text=-> texthl=Search
+    exe 'sign place 1 name=multichange line='.start.' buffer='.bufnr('%')
+    exe 'sign place 2 name=multichange line='.end.'   buffer='.bufnr('%')
+  endif
+
   return {
         \   'start':     start,
         \   'end':       end,
