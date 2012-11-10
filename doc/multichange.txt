@@ -1,0 +1,126 @@
+==============================================================================
+CONTENTS                                      *multichange* *multichange-contents*
+
+    Installation...........................: |multichange-installation|
+    Usage..................................: |multichange-usage|
+    Settings...............................: |multichange-settings|
+    Internals..............................: |multichange-internals|
+    Issues.................................: |multichange-issues|
+
+
+==============================================================================
+INSTALLATION                                          *multichange-installation*
+
+There are several ways to install the plugin. The recommended one is by using
+Tim Pope's pathogen (http://www.vim.org/scripts/script.php?script_id=2332). In
+that case, you can clone the plugin's git repository like so:
+>
+    git clone git://github.com/AndrewRadev/multichange.vim.git ~/.vim/bundle/multichange
+<
+If your vim configuration is under git version control, you could also set up
+the repository as a submodule, which would allow you to update more easily.
+The command is (provided you're in ~/.vim):
+>
+    git submodule add git://github.com/AndrewRadev/multichange.vim.git bundle/multichange
+<
+
+Another way is to simply copy all the essential directories inside the ~/.vim
+directory: autoload, doc, plugin.
+
+
+==============================================================================
+USAGE                                                        *multichange-usage*
+
+The plugin exposes a command, |:Multichange|, that enters a special "multi"
+mode. In this mode, any change of a word with a "c" mapping is propagated
+throughout the entire file. Example:
+>
+    def add(one, two):
+        return one + two
+<
+If we wanted to rename the "one" parameter to "first" and the "two" parameter
+to "second", we could do it in a number of ways using either the "." mapping
+or substitutions. With multichange, we execute the |:Multichange| command, and
+then perform the "cw" operation on "one" and "two" within the argument list.
+Changing them to "first" and "second" will be performed for the entire file.
+
+Note that this works similarly to the "*" mapping -- it replaces words only,
+so it won't replace the "one" in "one_more_thing".
+
+To exit "multi" mode, press <esc>. To limit the "multi" mode to only an area
+of the file (for example, to rename variables within a single function
+definition), select the desired area and then execute |:Multichange|.
+
+You can also make a change in visual mode. For example, you want to change a
+function name in Vimscript:
+>
+    function! s:BadName()
+    endfunction
+
+    call s:BadName()
+<
+Since ":" is not in 'iskeyword' (I think), you might have problems changing
+the function name using word motions. In this case, start "multi" mode as
+described above, then mark "s:BadName" in characterwise visual mode (with
+"v"). After pressing "c", change the name to whatever you like. This will
+propagate the same way as the word change from before. The difference is that
+whatever was selected will be changed, regardless of word boundaries. So, if
+you only select "Name" and change it, any encounter of "Name" will be
+replaced.
+
+The plugin also exposes a simple mapping for the |:Multichange| command, which
+is <c-n> by default. Modify |g:multichange_mapping| to change it. Set
+|g:multichange_mapping| to an empty string to avoid setting any mapping at all.
+>
+    " change mapping to "_n":
+    let g:multichange_mapping = '_n'
+
+    " disable mapping entirely
+    let g:multichange_mapping = ''
+<
+
+
+==============================================================================
+SETTINGS                                                  *multichange-settings*
+
+                                                         *g:multichange_mapping*
+>
+    let g:multichange_mapping = '_n'
+<
+
+Default value: '<c-n>'
+
+Controls the mapping for entering "multi" mode. Set to an empty string to
+avoid setting any mapping (you can still use the |:Multichange| command).
+
+
+==============================================================================
+INTERNALS                                                *multichange-internals*
+
+When the plugin starts "multi" mode, a buffer-local structure is instantiated
+with the data for the started mode, including its boundaries, if there are
+any. The "c" and "<esc>" keys are remapped in normal mode to start a
+substitution and exit "multi" mode, respectively. The "c" key is also mapped
+in visual mode (with |:xnoremap|, of course). Once the substitution is started
+with the "c" key, a different structure is instantiated for the particular
+substitution. Upon leaving insert mode, the substitution is performed and that
+record is destroyed, but the "mode" record remains for the next substitution.
+
+When <esc> is pressed, all buffer-local records are destroyed and the keys are
+unmapped, and, if necessary, mapped to their old mappings. This means that it
+should be safe to override "c" and <esc> to anything you like, the plugin will
+restore them afterwards.
+
+==============================================================================
+TODO                                                          *multichange-todo*
+
+- Make it work with "i" and "a" as well as with "c".
+
+==============================================================================
+ISSUES                                                      *multichange-issues*
+
+Any issues and suggestions are very welcome on the github bugtracker:
+https://github.com/AndrewRadev/multichange.vim/issues
+
+
+vim:tw=78:sw=4:ft=help:norl:
