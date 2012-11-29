@@ -2,6 +2,7 @@ runtime autoload/multichange/mode.vim
 runtime autoload/multichange/substitution.vim
 
 function! multichange#Setup(visual)
+  call multichange#Stop()
   let b:multichange_mode = multichange#mode#New(a:visual)
   call s:ActivateCustomMappings()
   call multichange#EchoModeMessage()
