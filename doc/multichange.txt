@@ -1,3 +1,5 @@
+*multichange.txt*	Propagate a word change throughout the buffer
+
 ==============================================================================
 CONTENTS                                      *multichange* *multichange-contents*
 
