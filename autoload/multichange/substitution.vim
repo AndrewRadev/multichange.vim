@@ -1,4 +1,4 @@
-function! multichange#substitution#New(visual)
+function! multichange#substitution#New(visual, action)
   let pattern = s:GetPattern(a:visual)
 
   if pattern == ''
@@ -7,20 +7,42 @@ function! multichange#substitution#New(visual)
 
   return {
         \   'pattern':   pattern,
+        \   'action':    a:action,
         \   'is_visual': a:visual,
         \
-        \   'GetReplacement': function('multichange#substitution#GetReplacement'),
+        \   'GetHighlightPattern': function('multichange#substitution#GetHighlightPattern'),
+        \   'GetReplacePattern':   function('multichange#substitution#GetReplacePattern'),
+        \   'GetReplacement':      function('multichange#substitution#GetReplacement'),
         \ }
 endfunction
 
+" TODO (2014-04-06) Better to provide simpler endpoints, #Highlight() and #Replace().
 function! multichange#substitution#GetReplacement() dict
   if self.is_visual
     let replacement = s:GetByMarks('`<', '`.')
   else
-    let replacement = expand('<cword>')
+    let replacement = @.
   endif
 
   return replacement
+endfunction
+
+" Get the pattern used for highlighting the matched areas.
+"
+function! multichange#substitution#GetHighlightPattern() dict
+  return self.pattern
+endfunction
+
+" Get the pattern used to find what to replace.
+"
+function! multichange#substitution#GetReplacePattern() dict
+  if self.action == 'c'
+    return self.pattern
+  elseif self.action == 'i'
+    return '\ze'.self.pattern
+  elseif self.action == 'a'
+    return self.pattern.'\zs'
+  endif
 endfunction
 
 function! s:GetPattern(visual)

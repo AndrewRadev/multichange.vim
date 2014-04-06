@@ -8,7 +8,7 @@ function! multichange#Setup(visual)
   call multichange#EchoModeMessage()
 endfunction
 
-function! multichange#Start(visual)
+function! multichange#Start(visual, action)
   if !exists('b:multichange_mode')
     return
   endif
@@ -16,8 +16,8 @@ function! multichange#Start(visual)
   let mode = b:multichange_mode
 
   let typeahead = s:GetTypeahead()
-  let b:multichange_substitution = multichange#substitution#New(a:visual)
-  call feedkeys('c', 'n')
+  let b:multichange_substitution = multichange#substitution#New(a:visual, a:action)
+  call feedkeys(a:action, 'n')
   call feedkeys(typeahead)
 
   let substitution = b:multichange_substitution
@@ -25,7 +25,7 @@ function! multichange#Start(visual)
   if empty(substitution)
     unlet b:multichange_substitution
   else
-    let match_pattern = substitution.pattern
+    let match_pattern = substitution.GetHighlightPattern()
 
     if mode.has_range
       let match_pattern = '\%>'.(mode.start - 1).'l'.match_pattern
@@ -80,7 +80,7 @@ function! s:PerformSubstitution(mode, substitution)
     endif
 
     " prepare the pattern
-    let pattern = escape(a:substitution.pattern, '/')
+    let pattern = escape(a:substitution.GetReplacePattern(), '/')
 
     " figure out the replacement
     let replacement = a:substitution.GetReplacement()
@@ -103,8 +103,12 @@ function! s:ActivateCustomMappings()
   let mode.saved_cn_mapping  = maparg('c', 'n')
   let mode.saved_cx_mapping  = maparg('c', 'x')
 
-  nnoremap <buffer> c :silent call multichange#Start(0)<cr>
-  xnoremap <buffer> c :<c-u>silent call multichange#Start(1)<cr>
+  nnoremap <buffer> c :silent call multichange#Start(0, 'c')<cr>
+  xnoremap <buffer> c :<c-u>silent call multichange#Start(1, 'c')<cr>
+
+  nnoremap <buffer> i :silent call multichange#Start(0, 'i')<cr>
+  nnoremap <buffer> a :silent call multichange#Start(0, 'a')<cr>
+
   nnoremap <buffer> <esc> :call multichange#Stop()<cr>
 endfunction
 
