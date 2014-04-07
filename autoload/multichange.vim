@@ -115,9 +115,13 @@ endfunction
 function! s:DeactivateCustomMappings()
   nunmap <buffer> c
   xunmap <buffer> c
+  nunmap <buffer> i
+  nunmap <buffer> a
   nunmap <buffer> <esc>
 
   let mode = b:multichange_mode
+
+  " TODO (2014-04-07) Restore saved i/a mappings
 
   if mode.saved_cn_mapping != ''
     exe 'nnoremap c '.mode.saved_cn_mapping
