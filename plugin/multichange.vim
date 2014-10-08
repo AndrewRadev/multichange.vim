@@ -24,9 +24,9 @@ function! s:MultichangeMotion(_motion_type)
 endfunction
 
 if g:multichange_mapping != ''
-  exe 'nnoremap '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
-  exe 'nnoremap '.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
-  exe 'xnoremap '.g:multichange_mapping.' :Multichange<cr>'
+  exe 'nnoremap <silent>'.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
+  exe 'nnoremap <silent>'.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
+  exe 'xnoremap <silent>'.g:multichange_mapping.' :Multichange<cr>'
 endif
 
 au InsertLeave * call multichange#Substitute()
