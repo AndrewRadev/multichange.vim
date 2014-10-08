@@ -10,6 +10,10 @@ if !exists('g:multichange_mapping')
   let g:multichange_mapping = '<c-n>'
 endif
 
+if !exists('g:multichange_motion_mapping')
+  let g:multichange_motion_mapping = '<c-n>'
+endif
+
 command! -nargs=0 -count=0 Multichange call multichange#Setup(<count>)
 
 function! s:MultichangeMotion(_motion_type)
@@ -20,7 +24,7 @@ function! s:MultichangeMotion(_motion_type)
 endfunction
 
 if g:multichange_mapping != ''
-  exe 'nnoremap '.g:multichange_mapping.g:multichange_mapping.' :Multichange<cr>'
+  exe 'nnoremap '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
   exe 'nnoremap '.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
   exe 'xnoremap '.g:multichange_mapping.' :Multichange<cr>'
 endif
