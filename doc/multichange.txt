@@ -70,16 +70,37 @@ whatever was selected will be changed, regardless of word boundaries. So, if
 you only select "Name" and change it, any encounter of "Name" will be
 replaced.
 
-The plugin also exposes a simple mapping for the |:Multichange| command, which
-is <c-n> by default. Modify |g:multichange_mapping| to change it. Set
-|g:multichange_mapping| to an empty string to avoid setting any mapping at all.
->
-    " change mapping to "_n":
-    let g:multichange_mapping = '_n'
+Mapping ~
 
-    " disable mapping entirely
-    let g:multichange_mapping = ''
+Typing |:Multichange| for an action like this is counterproductive. The plugin
+comes with a mapping to trigger the multi mode, which comes in two parts,
+configurable with |g:multichange_mapping| and |g:multichange_motion_mapping|.
+
+The default values of both are <c-n>:
+>
+    let g:multichange_mapping        = '<c-n>'
+    let g:multichange_motion_mapping = '<c-n>'
 <
+The first of these is the text object that starts multichange, so you need to
+combine it with a motion. For instance, <c-n>ap would start multichange over
+the next paragraph, <c-n>4j would start it over the next 4 lines and so on.
+
+The second one is the special motion to start a multichange over the entire
+buffer, so <c-n><c-n> would just trigger a global multichange. If you change
+the motion mapping to, say "n":
+>
+    let g:multichange_motion_mapping = 'n'
+<
+Then the mapping for a global multichange would be <c-n>n.
+
+My personal preference is:
+>
+    let g:multichange_mapping        = 'sm'
+    let g:multichange_motion_mapping = 'm'
+<
+This means that starting a global multichange would be `smm`, while starting
+one only for a ruby method would be `smam`. But this clobbers the `s` key that
+some people use, so it can't be the default.
 
 
 ==============================================================================
@@ -92,9 +113,26 @@ SETTINGS                                                  *multichange-settings*
 
 Default value: '<c-n>'
 
-Controls the mapping for entering "multi" mode. Set to an empty string to
-avoid setting any mapping (you can still use the |:Multichange| command).
+Controls the mapping for entering "multi" mode. Acts as a text object
+(|text-objects|), which means you need to provide a motion for the range of
+the multichange.
 
+Set it to an empty string to avoid setting any mapping (you can still use the
+|:Multichange| command).
+
+                                                  *g:multichange_motion_mapping*
+>
+    let g:multichange_motion_mapping = 'n'
+<
+
+Default value: '<c-n>'
+
+After triggering the multichange mapping, use this one to start a global
+multichange. So, if |g:multichange_mapping| is set to "_n", and this one is at
+its default value of <c-n>, then _n<c-n> would start a global multichange.
+
+Set to an empty string to avoid setting any mapping (you can still use the
+|:Multichange| command).
 
 ==============================================================================
 INTERNALS                                                *multichange-internals*

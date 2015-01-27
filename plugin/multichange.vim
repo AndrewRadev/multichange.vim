@@ -23,8 +23,11 @@ function! s:MultichangeMotion(_motion_type)
   call multichange#Setup(1)
 endfunction
 
-if g:multichange_mapping != ''
+if g:multichange_mapping != '' && g:multichange_motion_mapping != ''
   exe 'nnoremap <silent>'.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
+endif
+
+if g:multichange_mapping != ''
   exe 'nnoremap <silent>'.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
   exe 'xnoremap <silent>'.g:multichange_mapping.' :Multichange<cr>'
 endif
