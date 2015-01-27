@@ -2,7 +2,7 @@ if exists("g:loaded_multichange") || &cp
   finish
 endif
 
-let g:loaded_multichange = '0.1.0'
+let g:loaded_multichange = '0.2.0'
 let s:keepcpo = &cpo
 set cpo&vim
 
