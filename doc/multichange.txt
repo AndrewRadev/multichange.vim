@@ -134,6 +134,19 @@ its default value of <c-n>, then _n<c-n> would start a global multichange.
 Set to an empty string to avoid setting any mapping (you can still use the
 |:Multichange| command).
 
+                                                   *g:multichange_save_position*
+>
+    let g:multichange_save_position = 1
+<
+Default value: 0
+
+Setting this to 1 will make the plugin save and restore position after
+starting multi mode. This means that if you start multichange in a particular
+area with a text object, the cursor will not move.
+
+Note, however, that this clobbers the "z" register, which is why it's not the
+default.
+
 ==============================================================================
 INTERNALS                                                *multichange-internals*
 
