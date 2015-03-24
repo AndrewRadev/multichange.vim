@@ -13,8 +13,8 @@ function! multichange#Start(visual)
     return
   endif
 
-  if exists('b:multichange_last_match_count')
-    unlet b:multichange_last_match_count
+  if exists('b:multichange_last_match')
+    unlet b:multichange_last_match
   endif
 
   let mode = b:multichange_mode
@@ -60,8 +60,8 @@ function! multichange#Stop()
     unlet b:multichange_mode
   endif
 
-  if exists('b:multichange_last_match_count')
-    unlet b:multichange_last_match_count
+  if exists('b:multichange_last_match')
+    unlet b:multichange_last_match
   endif
 
   sign unplace 1
@@ -74,8 +74,18 @@ function! multichange#EchoModeMessage()
   if exists('b:multichange_mode')
     let message = "-- MULTI --"
 
-    if exists('b:multichange_last_match_count')
-      let message .= " (".b:multichange_last_match_count." substitutions)"
+    if exists('b:multichange_last_match')
+      let pattern = b:multichange_last_match.pattern
+
+      if b:multichange_last_match.count == 1
+        let substitutions = "1 substitution"
+      else
+        let substitutions = b:multichange_last_match.count." substitutions"
+      endif
+
+      let offscreen = b:multichange_last_match.offscreen_count." offscreen"
+
+      let message .= " (".substitutions." of ".pattern.", ".offscreen.")"
     endif
 
     echohl ModeMsg | echo message | echohl None
@@ -86,16 +96,22 @@ function! s:PerformSubstitution(mode, substitution)
   try
     let saved_view = winsaveview()
 
-    " build up the range of the substitution
-    if a:mode.has_range
-      let range = a:mode.start.','.a:mode.end
-    else
-      let range = '%'
-    endif
-
-    " find the number of matches in the range
+    " Show the number of matches in the range
     if g:multichange_show_match_count
+      let b:multichange_last_match = {}
+      let b:multichange_last_match.pattern = a:substitution.pattern
+
       let match_count = 0
+      let offscreen_count = 0
+
+      " get the limits of the screen
+      let saved_scrolloff = &scrolloff
+      set scrolloff=0
+      normal! H
+      let screen_start = line('.')
+      normal! L
+      let screen_end = line('.')
+      let &scrolloff = saved_scrolloff
 
       " start from just before the first line of the range
       if a:mode.has_range && a:mode.start > 1
@@ -112,16 +128,32 @@ function! s:PerformSubstitution(mode, substitution)
         let end_line = 0
       endif
 
+      " search by wrapping (if we start at end of file), then disable wrapping
       let flags = 'w'
       while search(a:substitution.pattern, flags, end_line) > 0
         let match_count += 1
+
+        if line('.') < screen_start || line('.') > screen_end
+          let offscreen_count += 1
+        endif
+
         let flags = 'W'
       endwhile
 
       call winrestview(saved_view)
-      let b:multichange_last_match_count = match_count
-    elseif exists('b:multichange_last_match_count')
-      unlet b:multichange_last_match_count
+
+      let b:multichange_last_match = {
+            \ 'count':           match_count,
+            \ 'offscreen_count': offscreen_count,
+            \ 'pattern':         a:substitution.pattern,
+            \ }
+    endif
+
+    " Build up the range of the substitution
+    if a:mode.has_range
+      let range = a:mode.start.','.a:mode.end
+    else
+      let range = '%'
     endif
 
     " prepare the pattern
