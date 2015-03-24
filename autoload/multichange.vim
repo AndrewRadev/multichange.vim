@@ -13,6 +13,10 @@ function! multichange#Start(visual)
     return
   endif
 
+  if exists('b:multichange_last_match_count')
+    unlet b:multichange_last_match_count
+  endif
+
   let mode = b:multichange_mode
 
   let typeahead = s:GetTypeahead()
@@ -56,6 +60,10 @@ function! multichange#Stop()
     unlet b:multichange_mode
   endif
 
+  if exists('b:multichange_last_match_count')
+    unlet b:multichange_last_match_count
+  endif
+
   sign unplace 1
   sign unplace 2
 
@@ -64,7 +72,13 @@ endfunction
 
 function! multichange#EchoModeMessage()
   if exists('b:multichange_mode')
-    echohl ModeMsg | echo "-- MULTI --" | echohl None
+    let message = "-- MULTI --"
+
+    if exists('b:multichange_last_match_count')
+      let message .= " (".b:multichange_last_match_count." substitutions)"
+    endif
+
+    echohl ModeMsg | echo message | echohl None
   endif
 endfunction
 
@@ -77,6 +91,37 @@ function! s:PerformSubstitution(mode, substitution)
       let range = a:mode.start.','.a:mode.end
     else
       let range = '%'
+    endif
+
+    " find the number of matches in the range
+    if g:multichange_show_match_count
+      let match_count = 0
+
+      " start from just before the first line of the range
+      if a:mode.has_range && a:mode.start > 1
+        exe (a:mode.start - 1)
+        normal! $
+      else
+        normal! G$
+      endif
+
+      " stop at end of range
+      if a:mode.has_range
+        let end_line = a:mode.end
+      else
+        let end_line = 0
+      endif
+
+      let flags = 'w'
+      while search(a:substitution.pattern, flags, end_line) > 0
+        let match_count += 1
+        let flags = 'W'
+      endwhile
+
+      call winrestview(saved_view)
+      let b:multichange_last_match_count = match_count
+    elseif exists('b:multichange_last_match_count')
+      unlet b:multichange_last_match_count
     endif
 
     " prepare the pattern

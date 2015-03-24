@@ -147,6 +147,17 @@ area with a text object, the cursor will not move.
 Note, however, that this clobbers the "z" register, which is why it's not the
 default.
 
+
+                                                    *g:multichange_show_match_count*
+>
+    let g:multichange_show_match_count = 0
+<
+Default value: 1
+
+This setting controls whether to show a message for the number of
+substitutions performed in the buffer.
+
+
 ==============================================================================
 INTERNALS                                                *multichange-internals*
 

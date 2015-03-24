@@ -18,6 +18,10 @@ if !exists('g:multichange_save_position')
   let g:multichange_save_position = 0
 endif
 
+if !exists('g:multichange_show_match_count')
+  let g:multichange_show_match_count = 1
+endif
+
 command! -nargs=0 -count=0 Multichange call multichange#Setup(<count>)
 
 function! s:MultichangeMotion(_motion_type)
