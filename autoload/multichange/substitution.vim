@@ -5,6 +5,8 @@ function! multichange#substitution#New(visual)
     return {}
   endif
 
+  let pattern = '\C'.pattern
+
   return {
         \   'pattern':   pattern,
         \   'is_visual': a:visual,
@@ -27,7 +29,7 @@ function! s:GetPattern(visual)
   if a:visual
     let changed_text = s:GetByMarks('`<', '`>')
     if changed_text != ''
-      let pattern = changed_text
+      let pattern = '\V'.changed_text.'\m'
     endif
     call feedkeys('gv', 'n')
   else
