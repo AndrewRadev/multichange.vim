@@ -2,6 +2,8 @@ This plugin is originally a fork of https://github.com/adinapoli/vim-markmultipl
 
 ## Usage
 
+![Demo](http://i.andrewradev.com/b67a88ca3660b2c41f9afe7c1bd88460.gif)
+
 The plugin exposes a command, `:Multichange`, that enters a special "multi" mode. In this mode, any change of a word with a "c" mapping is propagated throughout the entire file. Example:
 
 ``` python
