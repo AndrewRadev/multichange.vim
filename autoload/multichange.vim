@@ -20,7 +20,7 @@ function! multichange#Start(visual)
   let mode = b:multichange_mode
 
   let typeahead = s:GetTypeahead()
-  let b:multichange_substitution = multichange#substitution#New(a:visual)
+  let b:multichange_substitution = multichange#substitution#New(a:visual, getpos('.'))
   call feedkeys('c', 'n')
   call feedkeys(typeahead)
 
