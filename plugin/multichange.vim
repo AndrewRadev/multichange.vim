@@ -37,20 +37,20 @@ endfunction
 
 if g:multichange_mapping != '' && g:multichange_motion_mapping != ''
   if g:multichange_save_position
-    exe 'nnoremap <silent>'.g:multichange_mapping.g:multichange_motion_mapping.' mz:Multichange<cr>`z'
+    exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' mz:Multichange<cr>`z'
   else
-    exe 'nnoremap <silent>'.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
+    exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
   endif
 endif
 
 if g:multichange_mapping != ''
   if g:multichange_save_position
-    exe 'nnoremap <silent>'.g:multichange_mapping.' mz:set opfunc=<SID>MultichangeMotion<cr>g@'
+    exe 'nnoremap <silent> '.g:multichange_mapping.' mz:set opfunc=<SID>MultichangeMotion<cr>g@'
   else
-    exe 'nnoremap <silent>'.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
+    exe 'nnoremap <silent> '.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
   endif
 
-  exe 'xnoremap <silent>'.g:multichange_mapping.' :Multichange<cr>'
+  exe 'xnoremap <silent> '.g:multichange_mapping.' :Multichange<cr>'
 endif
 
 au InsertLeave * call multichange#Substitute()
