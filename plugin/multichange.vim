@@ -41,7 +41,7 @@ function! s:MultichangeMotion(_motion_type)
 endfunction
 
 if g:multichange_mapping != '' && g:multichange_motion_mapping != ''
-    exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
+  exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
 endif
 
 if g:multichange_mapping != ''
