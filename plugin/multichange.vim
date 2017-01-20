@@ -31,21 +31,18 @@ function! s:MultichangeMotion(_motion_type)
   call multichange#Setup(1)
 
   if g:multichange_save_position
-    normal! `z
+    call setpos('.', g:Multichange_memo_position)
+    redraw
   endif
 endfunction
 
 if g:multichange_mapping != '' && g:multichange_motion_mapping != ''
-  if g:multichange_save_position
-    exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' mz:Multichange<cr>`z'
-  else
     exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
-  endif
 endif
 
 if g:multichange_mapping != ''
   if g:multichange_save_position
-    exe 'nnoremap <silent> '.g:multichange_mapping.' mz:set opfunc=<SID>MultichangeMotion<cr>g@'
+    exe 'nnoremap <silent> '.g:multichange_mapping.' :let g:Multichange_memo_position = getpos(".") \| set opfunc=<SID>MultichangeMotion<cr>g@'
   else
     exe 'nnoremap <silent> '.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
   endif
