@@ -29,7 +29,6 @@ function! s:save_position()
 endfunction
 
 function! s:MultichangeMotion(_motion_type)
-  let g:Multichange_memo_position = getpos(".")
   call setpos("'<", getpos("'["))
   call setpos("'>", getpos("']"))
 
