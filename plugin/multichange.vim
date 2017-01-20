@@ -15,7 +15,7 @@ if !exists('g:multichange_motion_mapping')
 endif
 
 if !exists('g:multichange_save_position')
-  let g:multichange_save_position = 0
+  let g:multichange_save_position = 1
 endif
 
 if !exists('g:multichange_show_match_count')
