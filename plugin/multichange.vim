@@ -24,10 +24,8 @@ endif
 
 command! -nargs=0 -count=0 Multichange call multichange#Setup(<count>)
 
-function! s:maybe_save_position()
-  if g:multichange_save_position
-    let s:memo_position = getpos('.')
-  endif
+function! s:save_position()
+  let s:memo_position = getpos('.')
 endfunction
 
 function! s:MultichangeMotion(_motion_type)
@@ -48,7 +46,7 @@ if g:multichange_mapping != '' && g:multichange_motion_mapping != ''
 endif
 
 if g:multichange_mapping != ''
-  exe 'nnoremap <silent> '.g:multichange_mapping.' :call <SID>maybe_save_position() \| set opfunc=<SID>MultichangeMotion<cr>g@'
+  exe 'nnoremap <silent> '.g:multichange_mapping.' :call <SID>save_position() \| set opfunc=<SID>MultichangeMotion<cr>g@'
   exe 'xnoremap <silent> '.g:multichange_mapping.' :Multichange<cr>'
 endif
 
