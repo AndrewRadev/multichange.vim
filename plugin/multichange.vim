@@ -15,7 +15,7 @@ if !exists('g:multichange_motion_mapping')
 endif
 
 if !exists('g:multichange_save_position')
-  let g:multichange_save_position = 0
+  let g:multichange_save_position = 1
 endif
 
 if !exists('g:multichange_show_match_count')
@@ -24,6 +24,10 @@ endif
 
 command! -nargs=0 -count=0 Multichange call multichange#Setup(<count>)
 
+function! s:save_position()
+  let s:memo_position = getpos('.')
+endfunction
+
 function! s:MultichangeMotion(_motion_type)
   call setpos("'<", getpos("'["))
   call setpos("'>", getpos("']"))
@@ -31,25 +35,17 @@ function! s:MultichangeMotion(_motion_type)
   call multichange#Setup(1)
 
   if g:multichange_save_position
-    normal! `z
+    call setpos('.', s:memo_position)
+    redraw
   endif
 endfunction
 
 if g:multichange_mapping != '' && g:multichange_motion_mapping != ''
-  if g:multichange_save_position
-    exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' mz:Multichange<cr>`z'
-  else
-    exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
-  endif
+  exe 'nnoremap <silent> '.g:multichange_mapping.g:multichange_motion_mapping.' :Multichange<cr>'
 endif
 
 if g:multichange_mapping != ''
-  if g:multichange_save_position
-    exe 'nnoremap <silent> '.g:multichange_mapping.' mz:set opfunc=<SID>MultichangeMotion<cr>g@'
-  else
-    exe 'nnoremap <silent> '.g:multichange_mapping.' :set opfunc=<SID>MultichangeMotion<cr>g@'
-  endif
-
+  exe 'nnoremap <silent> '.g:multichange_mapping.' :call <SID>save_position() \| set opfunc=<SID>MultichangeMotion<cr>g@'
   exe 'xnoremap <silent> '.g:multichange_mapping.' :Multichange<cr>'
 endif
 
