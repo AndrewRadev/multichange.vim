@@ -36,7 +36,7 @@ function! multichange#Start(visual)
       let match_pattern = match_pattern.'\%<'.(mode.end + 1).'l'
     endif
 
-    call matchadd('Search', match_pattern)
+    exe '2match Search /'.escape(match_pattern, '/').'/'
   endif
 endfunction
 
@@ -44,7 +44,7 @@ function! multichange#Substitute()
   if exists('b:multichange_mode') && exists('b:multichange_substitution')
     call s:PerformSubstitution(b:multichange_mode, b:multichange_substitution)
     unlet b:multichange_substitution
-    call clearmatches()
+    2match none
     call multichange#EchoModeMessage()
   endif
 endfunction
@@ -52,7 +52,7 @@ endfunction
 function! multichange#Stop()
   if exists('b:multichange_substitution')
     unlet b:multichange_substitution
-    call clearmatches()
+    2match none
   endif
 
   if exists('b:multichange_mode')
