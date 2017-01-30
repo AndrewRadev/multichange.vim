@@ -64,3 +64,10 @@ If you want to avoid setting mappings, set the variables to empty strings. You w
 let g:multichange_mapping        = ''
 let g:multichange_motion_mapping = ''
 ```
+
+## Similar plugins
+
+Various plugins provide ways to make it easier to change multiple things in a buffer. Here's an incomplete list:
+
+- https://github.com/haya14busa/vim-asterisk
+- https://github.com/osyo-manga/vim-over
