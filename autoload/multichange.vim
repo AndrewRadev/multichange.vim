@@ -166,6 +166,9 @@ function! s:PerformSubstitution(mode, substitution)
     endif
     let replacement = escape(replacement, '/&')
 
+    " undo the last change, so the substitution applies that one as well
+    undo
+
     " perform the substitution
     exe range.'s/'.pattern.'/'.replacement.'/ge'
   finally
