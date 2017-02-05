@@ -52,9 +52,13 @@ if g:multichange_mapping != ''
   exe 'xnoremap <silent> '.g:multichange_mapping.' :Multichange<cr>'
 endif
 
-au InsertLeave * call multichange#Substitute()
-au InsertLeave * call multichange#EchoModeMessage()
-au CursorHold  * call multichange#EchoModeMessage()
+augroup multichange
+  autocmd!
+
+  au InsertLeave * call multichange#Substitute()
+  au InsertLeave * call multichange#EchoModeMessage()
+  au CursorHold  * call multichange#EchoModeMessage()
+augroup END
 
 let &cpo = s:keepcpo
 unlet s:keepcpo
