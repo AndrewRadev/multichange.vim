@@ -30,7 +30,7 @@ function! s:GetPattern(visual)
   if a:visual
     let changed_text = s:GetByMarks(getpos("'<"), getpos("'>"))
     if changed_text != ''
-      let pattern = '\V'.changed_text.'\m'
+      let pattern = '\V'.escape(changed_text, '\').'\m'
     endif
     call feedkeys('gv', 'n')
   else
