@@ -22,12 +22,7 @@ if !exists('g:multichange_show_match_count')
   let g:multichange_show_match_count = 1
 endif
 
-if has('patch-7.4.542')
-  " Without -addr=lines, a recent Vim version fails with an E14:
-  command! -nargs=0 -count=0 -addr=lines Multichange call multichange#Setup(<count>)
-else
-  command! -nargs=0 -count=0 Multichange call multichange#Setup(<count>)
-endif
+command! -nargs=0 -range=0 Multichange call multichange#Setup(<count>)
 
 let s:memo_position = []
 
