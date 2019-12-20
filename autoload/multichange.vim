@@ -164,7 +164,7 @@ function! s:PerformSubstitution(mode, substitution)
     if replacement == ''
       return
     endif
-    let replacement = escape(replacement, '/&')
+    let replacement = escape(replacement, '/&~\')
 
     " undo the last change, so the substitution applies that one as well
     undo
